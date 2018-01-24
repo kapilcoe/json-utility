@@ -1,0 +1,14 @@
+The application will consist of various react components.
+
+Main Component : The component that will be rendered to the dom node. It will consist of three broad components namely Header, Body and Footer
+Header Component : This will be a static component with image and logo. It will contain two other static component namely About and Contact
+Body Component : It will contain four components namely JSON, Table, PrettyJSON, clear json. It will be the parent component that will conect store to the child component.
+JSON Component: It will render a text area, which will contain the raw json.
+Table Component : It will have cell component, Array Component and Object Component.
+Cell Component : will render a bordered div block with string value inside it, it can be editable or non editable.
+Array Component : will render a list of cell, array or object component.
+Object Component : will render a cell component and either of cell, array or object component.
+Footer Component : again a static component.
+
+
+Initially we will store the json in a variable inside body component. Later store can be used to hold the json.
