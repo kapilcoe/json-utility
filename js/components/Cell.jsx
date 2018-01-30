@@ -8,7 +8,7 @@ export default class Cell extends React.Component {
 	render() {
 		var clsName = this.props.type === 'key' ? 'key' : 'value';
 		return <div className = {clsName}>
-					{this.props.content}
+					{this.props.content.toString()}
 				</div>
 	}
 }

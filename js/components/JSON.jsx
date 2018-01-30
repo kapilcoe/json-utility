@@ -2,6 +2,7 @@ import React from 'react';
 import _ from 'lodash';
 import Cell from './Cell.jsx';
 import ArrayList from './Array.jsx';
+import { getDataType } from '../utils/helpers';
 
 export default class JSON extends React.Component {
 	constructor(props) {
@@ -13,7 +14,7 @@ export default class JSON extends React.Component {
 		let rows = this.rows;
 		_.forOwn(object, function(value, key) {
 			var keyElement = <Cell type = "key" content={key}></Cell>;
-			var valueType = typeof(value) === 'string' || typeof(value) === 'number' ? 'primitive' : (_.isArray(value) ? 'array' : 'object');
+			var valueType = getDataType(value);
 			var valueElement;
 			switch(valueType) {
 				case 'primitive':
