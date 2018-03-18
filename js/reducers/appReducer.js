@@ -9,6 +9,15 @@ const json = (state = {}, action) => {
 	}
 }
 
-const appReducer = combineReducers({json});
+const cellHeight = (height = 60, action) => {
+	switch(action.type) {
+		case 'SET_HEIGHT' : 
+			return action.height;
+		default:
+			return height;
+	}
+}
+
+const appReducer = combineReducers({json}, {cellHeight});
 
 export default appReducer;

@@ -26,7 +26,7 @@ class Body extends React.Component {
 					<br/>
 					<hr/>
 					<br/>
-					<Table json = {this.props.json}/>
+					<Table json = {this.props.json} cellHeight={this.props.cellHeight}/>
 				</div>
 		
 	}
@@ -34,7 +34,8 @@ class Body extends React.Component {
 
 const mapStateToProps = state => {
 	return {
-		json: state.json
+		json: state.json,
+		cellHeight: state.height
 	}
 }
 

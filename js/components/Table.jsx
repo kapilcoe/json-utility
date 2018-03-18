@@ -2,9 +2,8 @@ import React from 'react';
 import ArrayList from './Array.jsx';
 import Cell from './Cell.jsx';
 import JSON from './JSON.jsx';
-import {getDataType} from '../utils/helpers';
-import { drawTable } from '../utils/helpers';
-import { validJSON} from '../utils/helpers';
+import {getDataType, drawTable, validJSON, populateHeight} from '../utils/helpers';
+
 
 export default class Table extends React.Component {
 	constructor(props) {
@@ -15,7 +14,6 @@ export default class Table extends React.Component {
 	}
 
 	componentWillUpdate(nextProps) {
-		this.height = 60 * (getDataType(nextProps.json) === 'array' ? nextProps.json.length : Object.keys(nextProps.json).length);
 	}
 
 	drawTable() {
@@ -23,8 +21,9 @@ export default class Table extends React.Component {
 			if(canvasElement) { 
 				var ctx = canvasElement.getContext("2d");
 				ctx.clearRect(0,0, 1100, 1600);
-				this.previousHeight = this.height;
-				drawTable(ctx, this.height , 1000, this.props.json);
+				populateHeight(this.props.json);
+				console.log(this.props.json);
+				drawTable(ctx, 60 , 1000, this.props.json);
 			}
 			
 	}

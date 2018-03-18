@@ -1,10 +1,59 @@
 import painter from './painter';
 import _ from 'lodash';
 
-const ARRAY_MULTIPLIER = 5;
-const OBJECT_MULTIPLIER = 5;
 export function getDataType(data) {
 	return Array.isArray(data) ? 'array' : (typeof(data) === 'object') ? 'object' : 'primitive';
+}
+
+function populateArrayWithHeight(array) {
+	_.forEach(array, function(val) {
+		if(getDataType(val) === 'array') {
+			populateArrayWithHeight(val);
+		}
+		if(getDataType(val) === 'object') {
+			populateObjectWithHeight(val);
+		}
+	});
+	var count = 0;
+	_.forEach(array, function(val) {
+		if(getDataType(val) === 'primitive') {
+			count++;
+		} else {
+			count+=Object.getPrototypeOf(val).h;
+		}
+	});
+	Object.getPrototypeOf(array).h = count;
+}
+
+function populateObjectWithHeight(object) {
+	_.forOwn(object, function(val, key){
+		if(getDataType(val) === 'object') {
+			populateObjectWithHeight(val);
+		}
+		if(getDataType(val) === 'array') {
+			populateArrayWithHeight(val)
+		}
+	});
+	var count = 0;
+	_.forOwn(object, function(val, key) {
+		if(getDataType(val) === 'primitive') {
+			count++;
+		} else {
+			count+=Object.getPrototypeOf(val).h;
+		}
+	});
+	Object.getPrototypeOf(object).h = count;
+}
+
+export function populateHeight(json) {
+	switch(getDataType(json)) {
+		case 'array' :
+			populateArrayWithHeight(json); 
+			break;
+		case 'object' :
+			populateObjectWithHeight(json);
+			break;
+	}
 }
 
 export function validJSON(json) {
@@ -20,40 +69,10 @@ export function drawCell(ctx, height, width, x, y, object, isKey, fontSize) {
 	painter.drawRectangle(ctx, height, width, x, y, object, isKey, fontSize);
 }
 
-var calculateRowHeight = function(object, totalHeight) {
-	var cellCount = 0;
-	var arrayCount = 0;
-	var objectCount = 0;
-	var type = getDataType(object);
-	if(type === 'array') {
-		_.each(object, function(val) {
-			if(getDataType(val) === 'array') {
-				cellCount += val.length;
-			} else if(getDataType(val) === 'object') {
-				cellCount += Object.keys(val).length;
-			} else {
-				cellCount ++;
-			}
-		})
-	} else {
-		_.forOwn(object, function(val, key) {
-			if(getDataType(val) === 'array') {
-				cellCount += val.length;
-			} else if(getDataType(val) === 'object') {
-				cellCount += Object.keys(val).length;
-			} else {
-				cellCount ++;
-			}
-		})
-	}
 
-	var cellHeight = totalHeight/cellCount;
-	return _.map(object, function(val) {if(getDataType(val) === 'array') {return val.length * cellHeight} else if( getDataType(val) === 'object'){return Object.keys(val).length * cellHeight} else{ return cellHeight }});
-}
-
+var cellHeight = 60;
 export function drawObject(ctx, height, width, x, y, object) {
-	var heights = calculateRowHeight(object, height);
-	var keyFont = _.min(heights);
+	var keyFont = 12;
 	var keyWidth = 0.2 * width;
 	var valueWidth = 0.8 * width;
 	var index = 0;
@@ -61,21 +80,21 @@ export function drawObject(ctx, height, width, x, y, object) {
 		var typeOfValue = getDataType(value);
 		switch(typeOfValue) {
 			case 'primitive': {
-				drawCell(ctx, heights[index], keyWidth, x, y, key, true, keyFont);
-				drawCell(ctx, heights[index], valueWidth, x + keyWidth, y, value);
-				y = y + heights[index];
+				drawCell(ctx, cellHeight, keyWidth, x, y, key, true, keyFont);
+				drawCell(ctx, cellHeight, valueWidth, x + keyWidth, y, value);
+				y = y + cellHeight;
 				break;
 			}				
 			case 'object' : {
-				drawCell(ctx, heights[index], keyWidth, x, y, key, true, keyFont);
-				drawObject(ctx, heights[index], valueWidth, x + keyWidth, y, value);
-				y = y + heights[index];
+				drawCell(ctx, cellHeight * Object.getPrototypeOf(value).h, keyWidth, x, y, key, true, keyFont);
+				drawObject(ctx, cellHeight * Object.getPrototypeOf(value).h, valueWidth, x + keyWidth, y, value);
+				y = y + cellHeight * Object.getPrototypeOf(value).h;
 				break;
 			}
 			case 'array' : {
-				drawCell(ctx, heights[index], keyWidth, x, y, key, true, keyFont);
-				drawArray(ctx, heights[index], valueWidth, x + keyWidth, y, value);
-				y = y + heights[index];
+				drawCell(ctx, cellHeight * Object.getPrototypeOf(value).h, keyWidth, x, y, key, true, keyFont);
+				drawArray(ctx, cellHeight * Object.getPrototypeOf(value).h, valueWidth, x + keyWidth, y, value);
+				y = y + Object.getPrototypeOf(value).h;
 				break;
 			}
 		}
@@ -84,29 +103,29 @@ export function drawObject(ctx, height, width, x, y, object) {
 }
 
 export function drawArray(ctx, height, width, x, y, object) {
-	var heights = calculateRowHeight(object, height);
 	_.each(object, function(value, index) {
 		var typeOfValue = getDataType(value, index);
 		switch(typeOfValue) {
 			case 'primitive': {
-				drawCell(ctx, heights[index], width, x, y, value);
-				y = y + heights[index];
+				drawCell(ctx, cellHeight, width, x, y, value);
+				y = y + cellHeight;
 				break;
 			}				
 			case 'object' : {
-				drawObject(ctx, heights[index], width, x, y, value);
-				y = y + heights[index];
+				drawObject(ctx, cellHeight * Object.getPrototypeOf(value).h, width, x, y, value);
+				y = y + Object.getPrototypeOf(value).h;
 				break;
 			}
 			case 'array' : {
-				drawArray(ctx, heights[index], width, x, y, value);
-				y = y + heights[index];
+				drawArray(ctx, cellHeight * Object.getPrototypeOf(value).h, width, x, y, value);
+				y = y + cellHeight * Object.getPrototypeOf(value).h;
 				break;
 			}
 				
 		}
 	})
 }
+
 
 
 export function drawTable(ctx, height, width, object) {
@@ -116,9 +135,9 @@ export function drawTable(ctx, height, width, object) {
 			drawCell(ctx, height, width, 0, 0, object);
 			break;
 		case 'object':
-			drawObject(ctx, height, width, 0, 0, object);
+			drawObject(ctx, Object.getPrototypeOf(object).height * height, width, 0, 0, object);
 			break;
 		case 'array':
-			drawArray(ctx, height, width, 0, 0, object);
+			drawArray(ctx, Object.getPrototypeOf(object).height * height, width, 0, 0, object);
 	}
 }
